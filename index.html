@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>SLO3D - Kvajdej</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #61443e;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #bfd1e5;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px;
+				padding: 5px;
+				left: 50%;
+				transform: translateX(-50%);
+				background: rgba(255, 255, 255, 0.58);
+			}
+
+			a {
+
+				color: #a06851;
+			}
+
+			.crosshair {
+				position: fixed;
+				background: red;
+				display: none;
+			}
+			.crosshair.vertical {
+				top: 0;
+				left: 50%;
+				height: 100%;
+				width: 1px;
+			}
+			.crosshair.horizontal {
+				top: 50%;
+				height: 1px;
+				width: 100%;
+			}
+
+			#preloader {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(255, 255, 255, 0.57);
+				display: flex;
+			}
+			#preloader h1 {
+				margin: auto;
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<div id="container"></div>
+		<div id="info">
+            KVAJDEJ taborni prostor v 3D. Za ogled cele Slovenije klikni <a href="https://rokrupnik.github.io/slo3d/" target="_blank">tukaj</a>.<br />
+			(levi klik: premikanje, desni klik: obračanje, kolešček: povečava)<br />
+        </div>
+		<div id="preloader">
+			<h1>NALAGAM PODATKE...</h1>
+		</div>
+
+		<div class="crosshair vertical">&nbsp;</div>
+		<div class="crosshair horizontal">&nbsp;</div>
+
+		<script src="js/libs/three.min.js"></script>
+
+        <script src="js/controls/OrbitControls.js"></script>
+
+		<script src="js/libs/Detector.js"></script>
+		<!--<script src="js/libs/stats.min.js"></script>-->
+
+		<script src="js/libs/qtree.js"></script>
+
+		<script src="js/libs/proj4.js"></script>
+
+		<script src="https://cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js"></script>
+
+		<!--<script src="https://cdn.jsdelivr.net/jquery/3.2.1/jquery.min.js"></script>
+		<script src="js/libs/jquery.mousewheel.min.js"></script>-->
+
+        <!-- CUSTOM JS -->
+		<script src="js/globals.js"></script>
+		<script src="js/controls.js"></script>
+		<script src="js/world.js"></script>
+		<script src="js/texture.js"></script> <!-- Depends on world.js -->
+		<script src="js/data.js"></script>
+		<!--<script src="js/lod.js"></script>-->
+		<script src="js/main.js"></script>
+
+<!-- ---------------- Custom Shader Code ------------------------ -->
+<script id="vertexShader" type="x-shader/x-vertex">
+varying vec2 vUV;
+
+void main()
+{
+	vUV = uv;
+
+	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+}
+</script>
+
+<!-- fragment shader a.k.a. pixel shader -->
+<script id="fragmentShader" type="x-shader/x-vertex">
+uniform sampler2D uOrtoFoto;
+
+varying vec2 vUV;
+
+vec4 color;
+
+void main()
+{
+	color = texture2D( uOrtoFoto, vUV );
+  	//color = vec4( 0.0, 0.0, 0.0, 1.0);
+
+	gl_FragColor = color;
+}
+</script>
+<!-- ----------------------------------------------------------- -->
+
+	</body>
+</html>
