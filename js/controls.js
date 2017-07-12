@@ -12,10 +12,7 @@ var Controls = (function () {
             yt = Controls.controls.target.y,
             zt = Controls.controls.target.z;
 
-        if (viewModeIsActive) { // View mode
-            Controls.controls.target.x = targetBackup.x;
-            Controls.controls.target.y = targetBackup.y;
-        } else if (zt < zc) {
+        if (zt < zc) {
             var kz = (-zc) / (zt - zc);
 
             xt = kz * (xt - xc) + xc;
