@@ -10,7 +10,7 @@ var Edge = {
     RIGHT: 8
 };
 
-function init(heights, dataWidth, dataDepth) {
+function init(heights, dataWidth, dataDepth, hmin, hmax) {
 
     World.initializeScene();
 
@@ -38,6 +38,8 @@ function init(heights, dataWidth, dataDepth) {
             var positions = new Float32Array( triangles * 3 * 3 );
             var normals = new Int16Array( triangles * 3 * 3 );
             var uvs = new Float32Array( triangles * 3 * 2 );
+            var colors = new Uint8Array( triangles * 3 * 3 );
+            var color = new THREE.Color();
 
             var pA = new THREE.Vector3();
             var pB = new THREE.Vector3();
@@ -50,6 +52,10 @@ function init(heights, dataWidth, dataDepth) {
             var widthScale = World.size.x / dataWidth;
             var depthScale = World.size.y / dataDepth;
             var heightScale = 0.1;
+
+            var rmin = 0, rmax = 255;
+            var gmin = 0, gmax = 255;
+            var bmin = 0, bmax = 255;
 
             var start = performance.now();
             for (var d = 0, ipnc = 0, iuv = 0; d < dataDepth - 1; d++) {
@@ -145,6 +151,36 @@ function init(heights, dataWidth, dataDepth) {
                     uvs[ iuv + 9 ]  = (d + 1) / dataDepth;
                     uvs[ iuv + 10 ] = (w + 1)  / dataWidth;
                     uvs[ iuv + 11 ] = (d + 1) / dataDepth;
+                    
+                    // colors
+                    // (k*low.red + (1-k)*hi.red,
+                    // k*low.green + (1-k)*hi.green,
+                    // k*low.blue + (1-k)*hi.blue)
+                    // where k = (height-minHeight) / (maxHeight-minHeight).
+                    var ak = (az - hmin) / (hmax - hmin);
+                    var bk = (bz - hmin) / (hmax - hmin);
+                    var ck = (cz - hmin) / (hmax - hmin);
+                    var dk = (dz - hmin) / (hmax - hmin);
+                    // First triangle
+                    colors[ ipnc ]     = ((1 - ak) * rmin) + (ak * rmax);
+                    colors[ ipnc + 1 ] = ((1 - ak) * gmin) + (ak * gmax);
+                    colors[ ipnc + 2 ] = ((1 - ak) * bmin) + (ak * bmax);
+                    colors[ ipnc + 3 ] = ((1 - bk) * rmin) + (bk * rmax);
+                    colors[ ipnc + 4 ] = ((1 - bk) * gmin) + (bk * gmax);
+                    colors[ ipnc + 5 ] = ((1 - bk) * bmin) + (bk * bmax);
+                    colors[ ipnc + 6 ] = ((1 - ck) * rmin) + (ck * rmax);
+                    colors[ ipnc + 7 ] = ((1 - ck) * gmin) + (ck * gmax);
+                    colors[ ipnc + 8 ] = ((1 - ck) * bmin) + (ck * bmax);
+                    // Second triangle
+                    colors[ ipnc + 9 ]  = ((1 - ck) * rmin) + (ck * rmax);
+                    colors[ ipnc + 10 ] = ((1 - ck) * gmin) + (ck * gmax);
+                    colors[ ipnc + 11 ] = ((1 - ck) * bmin) + (ck * bmax);
+                    colors[ ipnc + 12 ] = ((1 - bk) * rmin) + (bk * rmax);
+                    colors[ ipnc + 13 ] = ((1 - bk) * gmin) + (bk * gmax);
+                    colors[ ipnc + 14 ] = ((1 - bk) * bmin) + (bk * bmax);
+                    colors[ ipnc + 15 ] = ((1 - dk) * rmin) + (dk * rmax);
+                    colors[ ipnc + 16 ] = ((1 - dk) * gmin) + (dk * gmax);
+                    colors[ ipnc + 17 ] = ((1 - dk) * bmin) + (dk * bmax);
 
                     ipnc += 18;
                     iuv += 12;
@@ -157,6 +193,7 @@ function init(heights, dataWidth, dataDepth) {
             geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
             geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3, true ) );
             geometry.addAttribute( 'uv', new THREE.BufferAttribute( uvs, 2 ) );
+            geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3, true ) );
 
             //geometry.computeBoundingSphere();
 
@@ -168,14 +205,10 @@ function init(heights, dataWidth, dataDepth) {
             // material
 
             ortoFotoTexture.flipY = false;
-            var material = new THREE.ShaderMaterial({
-                    uniforms: {
-                        uOrtoFoto: { value: ortoFotoTexture }
-                    },
-                    vertexShader: document.getElementById( 'vertexShader'   ).textContent,
-                    fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
-                    //wireframe: true
-            });
+            var material = new THREE.MeshLambertMaterial( {
+                //color: 0xaaaaaa, specular: 0xffffff, shininess: 250, side: THREE.DoubleSide ,
+                vertexColors: THREE.VertexColors, shading: THREE.SmoothShading
+            } );
 
             // mesh
 

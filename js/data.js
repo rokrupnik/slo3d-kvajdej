@@ -4,7 +4,7 @@ var Data = (function () {
     var onInitialDataLoad = function () {
         var worldData = getHeights(Data.img);
 
-        init(worldData, Data.img.width, Data.img.height);
+        init(worldData, Data.img.width, Data.img.height, Data.hmin, Data.hmax);
     };
 
     var getHeights = function (image) {
